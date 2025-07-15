@@ -17,6 +17,9 @@ target_sources(${PROJECT_NAME}
     PRIVATE 
         source/PluginEditor.cpp
         source/PluginProcessor.cpp
+        source/Animation.cpp
+        source/Display.cpp
+        source/Shape.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

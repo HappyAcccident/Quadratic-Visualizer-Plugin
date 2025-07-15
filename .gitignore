@@ -1,3 +1,4 @@
 build/
 libs/
 bashbuild.bat
+.vscode/

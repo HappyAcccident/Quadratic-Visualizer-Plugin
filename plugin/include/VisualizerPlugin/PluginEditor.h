@@ -1,6 +1,12 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+#define M_PI 3.14159265359
+
+#include <cmath>
 #include "PluginProcessor.h"
+#include "Shape.h"
+#include "Display.h"
 
 //==============================================================================
 class VisualizerPluginAudioProcessorEditor final : public juce::AudioProcessorEditor,
@@ -18,6 +24,20 @@ public:
     int getFrameCounter() {return frameCounter;}
     void incrementFrameCounter() {frameCounter++;}
 
+    void update();
+    void recalculate();
+
+    Display& display = Display::getInstance();
+
+    Shape* A;
+    Shape* B;
+    Shape* C;
+
+    std::pair<Shape, Shape> quadraticRoot;
+    Shape* pos;
+    Shape* neg;
+
+    int testCounter = 0;
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
