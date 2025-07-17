@@ -89,8 +89,54 @@ void VisualizerPluginAudioProcessor::prepareToPlay (double sampleRate, int sampl
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
+    
+    auto& leftBassLowPass = leftBassFilterChain.get<0>();
+    leftBassLowPass.get<0>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 250.0f);
+    leftBassLowPass.get<1>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 250.0f);
+    leftBassLowPass.get<2>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 250.0f);
+    leftBassLowPass.get<3>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 250.0f);
 
+    auto& rightBassLowPass = rightBassFilterChain.get<0>();
+    rightBassLowPass.get<0>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 250.0f);
+    rightBassLowPass.get<1>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 250.0f);
+    rightBassLowPass.get<2>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 250.0f);
+    rightBassLowPass.get<3>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 250.0f);
 
+    auto& leftMidHighPass = leftMidFilterChain.get<0>();
+    leftMidHighPass.get<0>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 100.0f);
+    leftMidHighPass.get<1>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 100.0f);
+    leftMidHighPass.get<2>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 100.0f);
+    leftMidHighPass.get<3>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 100.0f);
+
+    auto& rightMidHighPass = rightMidFilterChain.get<0>();
+    rightMidHighPass.get<0>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 100.0f);
+    rightMidHighPass.get<1>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 100.0f);
+    rightMidHighPass.get<2>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 100.0f);
+    rightMidHighPass.get<3>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 100.0f);
+
+    auto& leftMidLowPass = leftMidFilterChain.get<1>();
+    leftMidLowPass.get<0>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 2500.0f);
+    leftMidLowPass.get<1>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 2500.0f);
+    leftMidLowPass.get<2>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 2500.0f);
+    leftMidLowPass.get<3>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 2500.0f);
+
+    auto& rightMidLowPass = rightMidFilterChain.get<1>();
+    rightMidLowPass.get<0>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 2500.0f);
+    rightMidLowPass.get<1>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 2500.0f);
+    rightMidLowPass.get<2>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 2500.0f);
+    rightMidLowPass.get<3>().coefficients = juce::dsp::IIR::Coefficients<float>::makeLowPass(getSampleRate(), 2500.0f);
+
+    auto& leftTrebleHighPass = leftTrebleFilterChain.get<0>();
+    leftTrebleHighPass.get<0>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
+    leftTrebleHighPass.get<1>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
+    leftTrebleHighPass.get<2>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
+    leftTrebleHighPass.get<3>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
+
+    auto& rightTrebleHighPass = rightTrebleFilterChain.get<0>();
+    rightTrebleHighPass.get<0>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
+    rightTrebleHighPass.get<1>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
+    rightTrebleHighPass.get<2>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
+    rightTrebleHighPass.get<3>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
 }
 
 void VisualizerPluginAudioProcessor::releaseResources()
@@ -132,35 +178,38 @@ void VisualizerPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
+    bassBuffer.makeCopyOf(buffer);
+    juce::dsp::AudioBlock<float> bassBlock(bassBuffer);
+    auto leftBassBlock = bassBlock.getSingleChannelBlock(0);
+    auto rightBassBlock = bassBlock.getSingleChannelBlock(1);
+    juce::dsp::ProcessContextReplacing<float> leftBassContext(leftBassBlock);
+    juce::dsp::ProcessContextReplacing<float> rightBassContext(rightBassBlock);
 
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-        juce::ignoreUnused (channelData);
+    midBuffer.makeCopyOf(buffer);
+    juce::dsp::AudioBlock<float> midBlock(midBuffer);
+    auto leftMidBlock = midBlock.getSingleChannelBlock(0);
+    auto rightMidBlock = midBlock.getSingleChannelBlock(1);
+    juce::dsp::ProcessContextReplacing<float> leftMidContext(leftMidBlock);
+    juce::dsp::ProcessContextReplacing<float> rightMidContext(rightMidBlock);
 
-        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        {
-            pushNextSampleIntoFifo(channelData[sample]);
-            // buffer.setSample(channel, sample, sin(5.0f * buffer.getSample(channel, sample)));
-        }
-    }
+    trebleBuffer.makeCopyOf(buffer);
+    juce::dsp::AudioBlock<float> trebleBlock(trebleBuffer);
+    auto leftTrebleBlock = trebleBlock.getSingleChannelBlock(0);
+    auto rightTrebleBlock = trebleBlock.getSingleChannelBlock(1);
+    juce::dsp::ProcessContextReplacing<float> leftTrebleContext(leftTrebleBlock);
+    juce::dsp::ProcessContextReplacing<float> rightTrebleContext(rightTrebleBlock);
+
+    leftBassFilterChain.process(leftBassContext);
+    rightBassFilterChain.process(rightBassContext);
+
+    leftMidFilterChain.process(leftMidContext);
+    rightMidFilterChain.process(rightMidContext);
+
+    leftTrebleFilterChain.process(leftTrebleContext);
+    rightTrebleFilterChain.process(rightTrebleContext);
 }
 
 //==============================================================================
@@ -195,19 +244,4 @@ void VisualizerPluginAudioProcessor::setStateInformation (const void* data, int 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new VisualizerPluginAudioProcessor();
-}
-
-void VisualizerPluginAudioProcessor::pushNextSampleIntoFifo(float sample)
-{
-    if (fifoIndex == fftSize)
-    {
-        if (!nextFFTBlockReady)
-        {
-            std::fill (fftData.begin(), fftData.end(), 0.0f);
-            std::copy (fifo.begin(), fifo.end(), fftData.begin());
-            nextFFTBlockReady = true;
-        }
-        fifoIndex = 0;
-    }
-    fifo[(size_t) fifoIndex++] = sample;
 }
