@@ -25,7 +25,6 @@ public:
     void incrementFrameCounter() {frameCounter++;}
 
     void update();
-    void recalculate();
 
     Display& display = Display::getInstance();
 

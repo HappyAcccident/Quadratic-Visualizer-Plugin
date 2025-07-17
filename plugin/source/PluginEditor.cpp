@@ -30,7 +30,7 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     display.clearShapes();
     display.addShape(pos);
     display.addShape(neg);
-    display.addShape(A);
+    // display.addShape(A);
 
     startTimerHz(60);
 }
@@ -83,12 +83,9 @@ void VisualizerPluginAudioProcessorEditor::resized()
 void VisualizerPluginAudioProcessorEditor::update()
 {
     A->updateAnimations(getFrameCounter());
+    B->updateAnimations(getFrameCounter());
     C->updateAnimations(getFrameCounter());
-    recalculate();
-}
 
-void VisualizerPluginAudioProcessorEditor::recalculate()
-{
     quadraticRoot = Shape::quadratic(*A, *B, *C);
     *pos = quadraticRoot.first;
     *neg = quadraticRoot.second;
