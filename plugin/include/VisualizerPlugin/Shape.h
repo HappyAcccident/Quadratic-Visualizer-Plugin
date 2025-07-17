@@ -58,6 +58,7 @@ public:
     void addAnimation(Animation* animation, int initFrame);
     void addAnimation(Animation* animation, int initFrame, int order);
     void updateAnimations(int currentFrame);
+    void updateAnimations(float currentVolume);
 };
 
 #endif

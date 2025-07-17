@@ -17,6 +17,9 @@ std::pair<std::vector<std::complex<float>>, float> ScaleAnimation::newPts(int fr
     return std::make_pair(pts, maxRadius);
 };
 
+std::pair<std::vector<std::complex<float>>, float> ScaleAnimation::newPts(float volume) {return std::make_pair(initPts, initMaxRadius);}
+
+
 std::pair<std::vector<std::complex<float>>, float> RotateAnimation::newPts(int frame)
 {
     std::vector<std::complex<float>> pts;
@@ -28,3 +31,21 @@ std::pair<std::vector<std::complex<float>>, float> RotateAnimation::newPts(int f
     }
     return std::make_pair(pts, initMaxRadius);
 };
+
+std::pair<std::vector<std::complex<float>>, float> RotateAnimation::newPts(float volume) {return std::make_pair(initPts, initMaxRadius);}
+
+
+std::pair<std::vector<std::complex<float>>, float> VolumeAnimation::newPts(float volume)
+{
+    std::vector<std::complex<float>> pts;
+    float maxRadius;
+    float scalar = volume;
+    for (auto pt : initPts)
+    {
+        pts.push_back(pt * scalar);
+    }
+    maxRadius = initMaxRadius*scalar;
+    return std::make_pair(pts, maxRadius);
+};
+
+std::pair<std::vector<std::complex<float>>, float> VolumeAnimation::newPts(int frame) {return std::make_pair(initPts, initMaxRadius);}

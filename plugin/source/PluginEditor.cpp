@@ -4,6 +4,21 @@
 #include "VisualizerPlugin/Shape.h"
 #include "VisualizerPlugin/Display.h"
 
+using VPAP = VisualizerPluginAudioProcessor;
+
+float averageSampleValue(const juce::AudioBuffer<float>& buffer)
+{
+    float sum = 0;
+    for (int c = 0; c < buffer.getNumChannels(); c++)
+    {
+        for (int i = 0; i < buffer.getNumSamples(); i++)
+        {
+            sum += abs(buffer.getSample(c, i));
+        }
+    }
+    return sum/buffer.getNumChannels();
+}
+
 //==============================================================================
 VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (VisualizerPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
@@ -11,17 +26,24 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     juce::ignoreUnused (processorRef);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize(1920/2, 1080/2);
+    setSize(1920, 1080-300);
 
-    display.setResolution(256);
+    display.setResolution(2048);
     int res = display.getResolution();
-    A = new Shape(3, (13.0/3.0), M_PI/8.0 + 0.2, 3, res, "Regular"); //8 pointed star with steepness 3
-    B = new Shape(1, res, M_PI/res, -2, res, "Regular"); //circle
+    // A = new Shape(3, (13.0/3.0), M_PI/8.0 + 0.2, 3, res, "Regular"); //8 pointed star with steepness 3
+    // B = new Shape(1, res, M_PI/res, -2, res, "Regular"); //circle
+    // C = new Shape(1, 4, M_PI/4, 1, res, "Regular"); //square
+    A = new Shape(3, 4, 0, -1, res, "Regular"); 
+    B = new Shape(1, res, 0, -4, res, "Regular"); //circle
     C = new Shape(1, 4, M_PI/4, 1, res, "Regular"); //square
-    Animation* ARotate = new RotateAnimation(144*4);
-    Animation* CScale = new ScaleAnimation(144*1, 1, 2);
-    C->addAnimation(CScale, 0);
-    A->addAnimation(ARotate, 0);
+    // Animation* ARotate = new RotateAnimation(144*4);
+    // Animation* CScale = new ScaleAnimation(144*1, 1, 2);
+    Animation* AVolume = new VolumeAnimation();
+    Animation* BVolume = new VolumeAnimation();
+    // C->addAnimation(CScale, 0);
+    // A->addAnimation(ARotate, 0);
+    A->addAnimation(AVolume, 0);
+    B->addAnimation(BVolume, 0);
 
     quadraticRoot = Shape::quadratic(*A, *B, *C);
     pos = new Shape(quadraticRoot.first);
@@ -31,7 +53,7 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     display.addShape(pos);
     display.addShape(neg);
     // display.addShape(A);
-
+    
     startTimerHz(60);
 }
 
@@ -47,10 +69,11 @@ void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (getLookAndFeel().findColour (juce::Slider::thumbColourId));
     // g.drawFittedText (std::to_string(getFrameCounter()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (std::to_string(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
-    g.drawFittedText (juce::String(testCounter) + ", " + juce::String(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
+    // g.drawFittedText (juce::String(testCounter) + ", " + juce::String(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
+    g.drawFittedText (juce::String(1/(meanBassVolume+1), 4) + " / " + juce::String(meanMidVolume, 4) + " / " + juce::String(meanTrebleVolume, 4), getLocalBounds(), juce::Justification::centred, 1);
     float radius = 2.0f;
 
-    float scale = display.getMaxRadius();
+    float scale = (display.getMaxRadius() == 0) ? 1.0f : display.getMaxRadius();
 
     for (auto shape : display.getShapes())
     {
@@ -61,8 +84,8 @@ void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
         float radius = 2.0f;
                 
         for (int i = 0; i < shapePts.size(); i++) {
-            float x = (250 / scale) * shapePts[i].real();
-            float y = (250 / scale) * shapePts[i].imag();
+            float x = (350 / scale) * shapePts[i].real();
+            float y = (350 / scale) * shapePts[i].imag();
         
             float xPrint = getWidth() / 2.f + x;
             float yPrint = getHeight() / 2.f - y;
@@ -82,9 +105,17 @@ void VisualizerPluginAudioProcessorEditor::resized()
 
 void VisualizerPluginAudioProcessorEditor::update()
 {
-    A->updateAnimations(getFrameCounter());
-    B->updateAnimations(getFrameCounter());
-    C->updateAnimations(getFrameCounter());
+    meanBassVolume = averageSampleValue(processorRef.getBassBuffer())/256.0f;
+    meanMidVolume = averageSampleValue(processorRef.getMidBuffer())/256.0f;
+    meanTrebleVolume = averageSampleValue(processorRef.getTrebleBuffer())/256.0f;
+
+    float scalar = 0.0f;
+    if (meanBassVolume == 0.0f) {scalar = 0.0f;} else {scalar = 1/(meanBassVolume+0.667);}
+
+    A->updateAnimations(scalar-0.6f);
+    B->updateAnimations(scalar-0.6f);
+    // B->updateAnimations(getFrameCounter());
+    // C->updateAnimations(getFrameCounter());
 
     quadraticRoot = Shape::quadratic(*A, *B, *C);
     *pos = quadraticRoot.first;

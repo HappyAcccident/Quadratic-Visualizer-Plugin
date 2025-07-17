@@ -12,6 +12,24 @@
 class VisualizerPluginAudioProcessorEditor final : public juce::AudioProcessorEditor,
 juce::Timer
 {
+protected:
+    Display& display = Display::getInstance();
+
+    Shape* A;
+    Shape* B;
+    Shape* C;
+
+    std::pair<Shape, Shape> quadraticRoot;
+    Shape* pos;
+    Shape* neg;
+
+    int testCounter = 0;
+
+    float bassCoefficient;
+    
+    float meanBassVolume = 0;
+    float meanMidVolume = 0;
+    float meanTrebleVolume = 0;
 public:
     explicit VisualizerPluginAudioProcessorEditor (VisualizerPluginAudioProcessor&);
     ~VisualizerPluginAudioProcessorEditor() override;
@@ -26,17 +44,6 @@ public:
 
     void update();
 
-    Display& display = Display::getInstance();
-
-    Shape* A;
-    Shape* B;
-    Shape* C;
-
-    std::pair<Shape, Shape> quadraticRoot;
-    Shape* pos;
-    Shape* neg;
-
-    int testCounter = 0;
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.

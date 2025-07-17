@@ -51,6 +51,11 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+
+    const juce::AudioBuffer<float>& getBassBuffer() const {return bassBuffer;}
+    const juce::AudioBuffer<float>& getMidBuffer() const {return midBuffer;}
+    const juce::AudioBuffer<float>& getTrebleBuffer() const {return trebleBuffer;}
+
 private:
     juce::dsp::ProcessorChain<CutFilter> leftBassFilterChain;
     juce::dsp::ProcessorChain<CutFilter> rightBassFilterChain;

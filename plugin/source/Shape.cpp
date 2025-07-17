@@ -120,11 +120,18 @@ std::pair<Shape, Shape> Shape::quadratic(const Shape& A, const Shape& B, const S
         auto two = std::complex<float>(2, 0);
         auto four = std::complex<float>(4, 0);
 
-        //later, make sure a cant be 0
-        auto posRoot = (negOne * b + std::sqrt(b*b - four*a*c))/(two * a);
-        auto negRoot = c / (a * posRoot);
-        posRootPts.push_back(posRoot);
-        negRootPts.push_back(negRoot);
+        if (a == std::complex<float>(0,0))
+        {
+            posRootPts.push_back(std::complex<float>(0, 0));
+            negRootPts.push_back(std::complex<float>(0, 0));
+        }
+        else
+        {
+            auto posRoot = (negOne * b + std::sqrt(b*b - four*a*c))/(two * a);
+            auto negRoot = c / (a * posRoot);
+            posRootPts.push_back(posRoot);
+            negRootPts.push_back(negRoot);
+        }
     }
 
     return std::make_pair<Shape, Shape>(Shape(posRootPts), Shape(negRootPts));
@@ -159,6 +166,16 @@ void Shape::updateAnimations(int currentFrame)
     {
         auto newPts = animation->newPts(currentFrame);
         this->setPts(newPts.first);
+        this->setMaxRadius(newPts.second);
+    }
+}
+
+void Shape::updateAnimations(float currentVolume)
+{
+    for (Animation* animation : animations)
+    {
+        auto newPts = animation->newPts(currentVolume);
+        this->setPts(newPts.first); 
         this->setMaxRadius(newPts.second);
     }
 }
