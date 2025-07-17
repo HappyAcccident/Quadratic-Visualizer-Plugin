@@ -1,6 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h>
 
 //==============================================================================
 class VisualizerPluginAudioProcessor final : public juce::AudioProcessor
@@ -42,7 +43,17 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    static constexpr auto fftOrder = 10;
+    static constexpr auto fftSize = 1 << fftOrder;
+
+    void pushNextSampleIntoFifo(float sample);
+    
 private:
+    juce::dsp::FFT forwardFFT{fftOrder};
+    std::array<float, fftSize> fifo;
+    std::array<float, fftSize * 2> fftData;
+    int fifoIndex = 0;
+    bool nextFFTBlockReady = false;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VisualizerPluginAudioProcessor)
 };

@@ -89,6 +89,8 @@ void VisualizerPluginAudioProcessor::prepareToPlay (double sampleRate, int sampl
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
+
+
 }
 
 void VisualizerPluginAudioProcessor::releaseResources()
@@ -130,6 +132,8 @@ void VisualizerPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
+
+
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
     // guaranteed to be empty - they may contain garbage).
@@ -145,14 +149,17 @@ void VisualizerPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
         juce::ignoreUnused (channelData);
-        // for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-        // {
-        //     buffer.setSample(channel, sample, sin(5.0f * buffer.getSample(channel, sample)));
-        // }
+
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+        {
+            pushNextSampleIntoFifo(channelData[sample]);
+            // buffer.setSample(channel, sample, sin(5.0f * buffer.getSample(channel, sample)));
+        }
     }
 }
 
@@ -188,4 +195,19 @@ void VisualizerPluginAudioProcessor::setStateInformation (const void* data, int 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new VisualizerPluginAudioProcessor();
+}
+
+void VisualizerPluginAudioProcessor::pushNextSampleIntoFifo(float sample)
+{
+    if (fifoIndex == fftSize)
+    {
+        if (!nextFFTBlockReady)
+        {
+            std::fill (fftData.begin(), fftData.end(), 0.0f);
+            std::copy (fifo.begin(), fifo.end(), fftData.begin());
+            nextFFTBlockReady = true;
+        }
+        fifoIndex = 0;
+    }
+    fifo[(size_t) fifoIndex++] = sample;
 }
