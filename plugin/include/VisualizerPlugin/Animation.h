@@ -6,22 +6,28 @@
 #include <cmath>
 #include <string>
 #include <complex>
+#include "State.h"
 
 class Animation {
 protected:
     std::vector<std::complex<float>> initPts;
-    int initFrame;
     float initMaxRadius;
 public:
     Animation() {}
 
-    void addToShape(std::vector<std::complex<float>> pts, float maxRadius, int frame) {initPts = pts; initMaxRadius = maxRadius; initFrame = frame;}
-
-    virtual std::pair<std::vector<std::complex<float>>, float> newPts(int frame) = 0;
-    virtual std::pair<std::vector<std::complex<float>>, float> newPts(float volume) = 0;
+    virtual void addToShape(const std::vector<std::complex<float>>& pts, const float& maxRadius, const State& currentState) = 0;
+    virtual std::pair<std::vector<std::complex<float>>, float> newPts(const State& currentState) const = 0;
 };
 
-class ScaleAnimation : public Animation
+class FrameAnimation : public Animation 
+{
+protected:
+    int initFrame;
+private:
+    void addToShape(const std::vector<std::complex<float>>& pts, const float& maxRadius, const State& currentState) {initPts = pts; initMaxRadius = maxRadius; initFrame = currentState.getFrameCounter();}
+};
+
+class ScaleAnimation : public FrameAnimation
 {
 protected:
     float frequency;
@@ -30,29 +36,28 @@ protected:
 public:
     ScaleAnimation(float frequency, float min, float max) : frequency(frequency), min(min), max(max) {}
 
-    std::pair<std::vector<std::complex<float>>, float> newPts(int frame) override;
-    std::pair<std::vector<std::complex<float>>, float> newPts(float volume) override;
+    std::pair<std::vector<std::complex<float>>, float> newPts(const State& currentState) const override;
 };
 
-class RotateAnimation : public Animation
+class RotateAnimation : public FrameAnimation
 {
 protected:
     float frequency;
 public:
     RotateAnimation(float frequency) : frequency(frequency) {}
 
-    std::pair<std::vector<std::complex<float>>, float> newPts(int frame) override;
-    std::pair<std::vector<std::complex<float>>, float> newPts(float volume) override;
+    std::pair<std::vector<std::complex<float>>, float> newPts(const State& currentState) const override;
 };
 
 class VolumeAnimation : public Animation
 {
 protected:
+    Band bandType;
 public:
-    VolumeAnimation() {}
+    void addToShape(const std::vector<std::complex<float>>& pts, const float& maxRadius, const State& currentState) {initPts = pts; initMaxRadius = maxRadius;}
+    VolumeAnimation(Band bandType) : bandType(bandType) {}
 
-    std::pair<std::vector<std::complex<float>>, float> newPts(int frame) override;
-    std::pair<std::vector<std::complex<float>>, float> newPts(float volume) override;
+    std::pair<std::vector<std::complex<float>>, float> newPts(const State& currentState) const override;
 };
 
 #endif

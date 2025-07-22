@@ -22,7 +22,6 @@ public:
   int getResolution() {return resolution;}
   std::vector<Shape*> getShapes() {return shapes;}
   int getNumShapes() {return shapes.size();}
-  int getCurrentFrame() {return currentFrame;}
 
   float getMaxRadius()
   {
@@ -39,8 +38,6 @@ public:
 
   void setResolution(int newResolution) {resolution = newResolution;}
   void addShape(Shape* shape) {shapes.push_back(shape);}
-  void setCurrentFrame(int frame) {currentFrame = frame;}
-  void incrementCurrentFrame() {currentFrame++;}
 
   void clearShapes() {shapes.clear();}
 private:
@@ -48,7 +45,6 @@ private:
   ~Display() = default; 
   static Display* instance; 
   int resolution;
-  int currentFrame;
   std::vector<Shape*> shapes;
 };
 

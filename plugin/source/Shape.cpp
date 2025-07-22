@@ -147,35 +147,25 @@ void Shape::rotate(float phi)
     }
 }
 
-void Shape::addAnimation(Animation* animation, int initFrame) 
+void Shape::addAnimation(Animation* animation, const State& currentState) 
 {
-    animation->addToShape(this->getPts(), this->getMaxRadius(), initFrame);
+    animation->addToShape(this->getPts(), this->getMaxRadius(), currentState);
     animations.push_back(animation);
 }
 
 //inserts animation at the orderth index in the animations vector
-void Shape::addAnimation(Animation* animation, int initFrame, int order)
+void Shape::addAnimation(Animation* animation, const State& currentState, const int& order)
 {
-    animation->addToShape(this->getPts(), this->getMaxRadius(), initFrame);
+    animation->addToShape(this->getPts(), this->getMaxRadius(), currentState);
     animations.insert(animations.begin() + order, animation);
 }
 
-void Shape::updateAnimations(int currentFrame)
+void Shape::updateAnimations(const State& currentState)
 {
     for (Animation* animation : animations)
     {
-        auto newPts = animation->newPts(currentFrame);
+        auto newPts = animation->newPts(currentState);
         this->setPts(newPts.first);
-        this->setMaxRadius(newPts.second);
-    }
-}
-
-void Shape::updateAnimations(float currentVolume)
-{
-    for (Animation* animation : animations)
-    {
-        auto newPts = animation->newPts(currentVolume);
-        this->setPts(newPts.first); 
         this->setMaxRadius(newPts.second);
     }
 }

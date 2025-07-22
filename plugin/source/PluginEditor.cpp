@@ -6,19 +6,6 @@
 
 using VPAP = VisualizerPluginAudioProcessor;
 
-float averageSampleValue(const juce::AudioBuffer<float>& buffer)
-{
-    float sum = 0;
-    for (int c = 0; c < buffer.getNumChannels(); c++)
-    {
-        for (int i = 0; i < buffer.getNumSamples(); i++)
-        {
-            sum += abs(buffer.getSample(c, i));
-        }
-    }
-    return sum/buffer.getNumChannels();
-}
-
 //==============================================================================
 VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (VisualizerPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
@@ -38,17 +25,16 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     C = new Shape(1, 4, M_PI/4, 1, res, "Regular"); //square
     // Animation* ARotate = new RotateAnimation(144*4);
     // Animation* CScale = new ScaleAnimation(144*1, 1, 2);
-    Animation* AVolume = new VolumeAnimation();
-    Animation* BVolume = new VolumeAnimation();
+    Animation* AVolume = new VolumeAnimation(Band::Bass);
+    Animation* BVolume = new VolumeAnimation(Band::Bass);
     // C->addAnimation(CScale, 0);
     // A->addAnimation(ARotate, 0);
-    A->addAnimation(AVolume, 0);
-    B->addAnimation(BVolume, 0);
+    A->addAnimation(AVolume, currentState);
+    B->addAnimation(BVolume, currentState);
 
     quadraticRoot = Shape::quadratic(*A, *B, *C);
     pos = new Shape(quadraticRoot.first);
     neg = new Shape(quadraticRoot.second);
-    testCounter++;
     display.clearShapes();
     display.addShape(pos);
     display.addShape(neg);
@@ -70,7 +56,8 @@ void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
     // g.drawFittedText (std::to_string(getFrameCounter()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (std::to_string(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (juce::String(testCounter) + ", " + juce::String(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
-    g.drawFittedText (juce::String(1/(meanBassVolume+1), 4) + " / " + juce::String(meanMidVolume, 4) + " / " + juce::String(meanTrebleVolume, 4), getLocalBounds(), juce::Justification::centred, 1);
+    g.drawFittedText (juce::String(1/(currentState.getMeanBandVolume(Band::Bass)+1), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Mid), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Treble), 4), getLocalBounds(), juce::Justification::centred, 1);
+    
     float radius = 2.0f;
 
     float scale = (display.getMaxRadius() == 0) ? 1.0f : display.getMaxRadius();
@@ -105,15 +92,15 @@ void VisualizerPluginAudioProcessorEditor::resized()
 
 void VisualizerPluginAudioProcessorEditor::update()
 {
-    meanBassVolume = averageSampleValue(processorRef.getBassBuffer())/256.0f;
-    meanMidVolume = averageSampleValue(processorRef.getMidBuffer())/256.0f;
-    meanTrebleVolume = averageSampleValue(processorRef.getTrebleBuffer())/256.0f;
+    currentState.setMeanBandVolume(Band::Bass, (processorRef.getBassBuffer()));
+    currentState.setMeanBandVolume(Band::Mid, (processorRef.getMidBuffer()));
+    currentState.setMeanBandVolume(Band::Treble, (processorRef.getTrebleBuffer()));;
 
     float scalar = 0.0f;
-    if (meanBassVolume == 0.0f) {scalar = 0.0f;} else {scalar = 1/(meanBassVolume+0.667);}
+    if (currentState.getMeanBandVolume(Band::Bass) == 0.0f) {scalar = 0.0f;} else {scalar = 1/(currentState.getMeanBandVolume(Band::Bass)+0.667);}
 
-    A->updateAnimations(scalar-0.6f);
-    B->updateAnimations(scalar-0.6f);
+    A->updateAnimations(currentState);
+    B->updateAnimations(currentState);
     // B->updateAnimations(getFrameCounter());
     // C->updateAnimations(getFrameCounter());
 
@@ -124,7 +111,7 @@ void VisualizerPluginAudioProcessorEditor::update()
 
 void VisualizerPluginAudioProcessorEditor::timerCallback()
 {
-    incrementFrameCounter();
+    currentState.incrementCurrentFrame();
     update();
     repaint();
 }

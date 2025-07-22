@@ -55,10 +55,9 @@ public:
     void rotate(float phi);
     void scale(float scalar);
 
-    void addAnimation(Animation* animation, int initFrame);
-    void addAnimation(Animation* animation, int initFrame, int order);
-    void updateAnimations(int currentFrame);
-    void updateAnimations(float currentVolume);
+    void addAnimation(Animation* animation, const State& currentState);
+    void addAnimation(Animation* animation, const State& currentState, const int& order); 
+    void updateAnimations(const State& currentState);
 };
 
 #endif

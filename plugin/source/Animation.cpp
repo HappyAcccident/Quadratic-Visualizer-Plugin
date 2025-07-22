@@ -4,11 +4,11 @@
 #include "VisualizerPlugin/Animation.h"
 
 
-std::pair<std::vector<std::complex<float>>, float> ScaleAnimation::newPts(int frame)
+std::pair<std::vector<std::complex<float>>, float> ScaleAnimation::newPts(const State& currentState) const
 {
     std::vector<std::complex<float>> pts;
     float maxRadius;
-    float scalar = (max-min)*(sinf(2*M_PI*(frame - (frequency)/2)/frequency))/2 + (max+min)/2;
+    float scalar = (max-min)*(sinf(2*M_PI*(currentState.getFrameCounter() - (frequency)/2)/frequency))/2 + (max+min)/2;
     for (auto pt : initPts)
     {
         pts.push_back(pt * scalar);
@@ -17,13 +17,10 @@ std::pair<std::vector<std::complex<float>>, float> ScaleAnimation::newPts(int fr
     return std::make_pair(pts, maxRadius);
 };
 
-std::pair<std::vector<std::complex<float>>, float> ScaleAnimation::newPts(float volume) {return std::make_pair(initPts, initMaxRadius);}
-
-
-std::pair<std::vector<std::complex<float>>, float> RotateAnimation::newPts(int frame)
+std::pair<std::vector<std::complex<float>>, float> RotateAnimation::newPts(const State& currentState) const
 {
     std::vector<std::complex<float>> pts;
-    float phi = 2*M_PI*frame/frequency;
+    float phi = 2*M_PI*currentState.getFrameCounter()/frequency;
     std::complex<float> rotation (cos(phi), sin(phi));
     for (auto pt : initPts)
     {
@@ -32,14 +29,11 @@ std::pair<std::vector<std::complex<float>>, float> RotateAnimation::newPts(int f
     return std::make_pair(pts, initMaxRadius);
 };
 
-std::pair<std::vector<std::complex<float>>, float> RotateAnimation::newPts(float volume) {return std::make_pair(initPts, initMaxRadius);}
-
-
-std::pair<std::vector<std::complex<float>>, float> VolumeAnimation::newPts(float volume)
+std::pair<std::vector<std::complex<float>>, float> VolumeAnimation::newPts(const State& currentState) const
 {
     std::vector<std::complex<float>> pts;
     float maxRadius;
-    float scalar = volume;
+    float scalar = currentState.getMeanBandVolume(bandType) - 0.6f;
     for (auto pt : initPts)
     {
         pts.push_back(pt * scalar);
@@ -47,5 +41,3 @@ std::pair<std::vector<std::complex<float>>, float> VolumeAnimation::newPts(float
     maxRadius = initMaxRadius*scalar;
     return std::make_pair(pts, maxRadius);
 };
-
-std::pair<std::vector<std::complex<float>>, float> VolumeAnimation::newPts(int frame) {return std::make_pair(initPts, initMaxRadius);}

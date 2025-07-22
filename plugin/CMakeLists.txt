@@ -20,6 +20,7 @@ target_sources(${PROJECT_NAME}
         source/Animation.cpp
         source/Display.cpp
         source/Shape.cpp
+        source/State.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
