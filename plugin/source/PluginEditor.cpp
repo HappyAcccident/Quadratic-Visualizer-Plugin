@@ -29,18 +29,19 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
 
     Animation* AVolume = new VolumeScaleAnimation(Band::Bass, ABassVolumeLambda);
     Animation* BVolume = new VolumeScaleAnimation(Band::Bass, BBassVolumeLabda);
-    // Animation* CVolumeRotate = new VolumeRotateAnimation(Band::Treble);
+    Animation* CVolumeRotate = new VolumeRotateAnimation(Band::Treble);
     A->addAnimation(AVolume, currentState);
     B->addAnimation(BVolume, currentState);
-    // C->addAnimation(CVolumeRotate, currentState);
+    C->addAnimation(CVolumeRotate, currentState);
+    C->addAnimation(AVolume, currentState);
 
     quadraticRoot = Shape::quadratic(*A, *B, *C);
     pos = new Shape(quadraticRoot.first);
     neg = new Shape(quadraticRoot.second);
     display.clearShapes();
-    display.addShape(pos);
-    display.addShape(neg);
-    // display.addShape(C);
+    // display.addShape(pos);
+    // display.addShape(neg);
+    display.addShape(C);
     
     startTimerHz(60);
 }

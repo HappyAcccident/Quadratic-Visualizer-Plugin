@@ -3,53 +3,30 @@
 #include <cmath>
 #include "VisualizerPlugin/Animation.h"
 
+using Transformation = std::function<std::complex<float>(const std::complex<float>&)>;
 
-std::pair<std::vector<std::complex<float>>, float> ScaleAnimation::newPts(const State& currentState) const
+void ScaleAnimation::makeTransformation(const State& currentState)
 {
-    std::vector<std::complex<float>> pts;
-    float maxRadius;
     float scalar = (max-min)*(sinf(2*M_PI*(currentState.getFrameCounter() - (frequency)/2)/frequency))/2 + (max+min)/2;
-    for (auto pt : initPts)
-    {
-        pts.push_back(pt * scalar);
-    }
-    maxRadius = initMaxRadius*scalar;
-    return std::make_pair(pts, maxRadius);
-};
+    transformation = [scalar](std::complex<float> pt) -> std::complex<float> {return pt * scalar;};
+}
 
-std::pair<std::vector<std::complex<float>>, float> RotateAnimation::newPts(const State& currentState) const
+void RotateAnimation::makeTransformation(const State& currentState)
 {
-    std::vector<std::complex<float>> pts;
     float phi = 2*M_PI*currentState.getFrameCounter()/frequency;
     std::complex<float> rotation (cos(phi), sin(phi));
-    for (auto pt : initPts)
-    {
-        pts.push_back(pt * rotation);
-    }
-    return std::make_pair(pts, initMaxRadius);
+    transformation = [rotation](std::complex<float> pt) -> std::complex<float> {return pt * rotation;};
 };
 
-std::pair<std::vector<std::complex<float>>, float> VolumeScaleAnimation::newPts(const State& currentState) const
+void VolumeScaleAnimation::makeTransformation(const State& currentState)
 {
-    std::vector<std::complex<float>> pts;
-    float maxRadius;
     float scalar = calculateScalar(currentState.getMeanBandVolume(bandType));
-    for (auto pt : initPts)
-    {
-        pts.push_back(pt * scalar);
-    }
-    maxRadius = initMaxRadius*scalar;
-    return std::make_pair(pts, maxRadius);
+    transformation = [scalar](std::complex<float> pt) -> std::complex<float> {return pt * scalar;};
 };
 
-std::pair<std::vector<std::complex<float>>, float> VolumeRotateAnimation::newPts(const State& currentState) const
+void VolumeRotateAnimation::makeTransformation(const State& currentState)
 {
-    std::vector<std::complex<float>> pts;
-    float phi = M_PI*currentState.getMeanBandVolume(bandType)/180.0f;
+    float phi = M_PI*currentState.getMeanBandVolume(bandType)*256.0f/180.0f;
     std::complex<float> rotation (cos(phi), sin(phi));
-    for (auto pt : initPts)
-    {
-        pts.push_back(pt * rotation);
-    }
-    return std::make_pair(pts, initMaxRadius);
+    transformation = [rotation](std::complex<float> pt) -> std::complex<float> {return pt * rotation;};
 };

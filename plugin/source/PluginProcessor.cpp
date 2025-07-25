@@ -155,8 +155,8 @@ void VisualizerPluginAudioProcessor::prepareToPlay (double sampleRate, int sampl
     rightBassFilterChain.prepare(spec);
     leftMidFilterChain.prepare(spec);
     rightMidFilterChain.prepare(spec);
-    leftMidFilterChain.prepare(spec);
-    rightMidFilterChain.prepare(spec);
+    leftTrebleFilterChain.prepare(spec);
+    rightTrebleFilterChain.prepare(spec);
 }
 
 void VisualizerPluginAudioProcessor::releaseResources()
@@ -201,24 +201,40 @@ void VisualizerPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buf
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    bassBuffer.makeCopyOf(buffer);
+    bassBuffer.clear();
+    midBuffer.clear();
+    trebleBuffer.clear();
+
+    juce::dsp::AudioBlock<float> inputBlock(buffer);
     juce::dsp::AudioBlock<float> bassBlock(bassBuffer);
+    juce::dsp::AudioBlock<float> midBlock(midBuffer);
+    juce::dsp::AudioBlock<float> trebleBlock(trebleBuffer);
+
+    auto leftInputBlock = inputBlock.getSingleChannelBlock(0);
+    auto rightInputBlock = inputBlock.getSingleChannelBlock(1);
+
     auto leftBassBlock = bassBlock.getSingleChannelBlock(0);
     auto rightBassBlock = bassBlock.getSingleChannelBlock(1);
+
+    auto leftMidBlock = midBlock.getSingleChannelBlock(0);
+    auto rightMidBlock = midBlock.getSingleChannelBlock(1);
+
+    auto leftTrebleBlock = trebleBlock.getSingleChannelBlock(0);
+    auto rightTrebleBlock = trebleBlock.getSingleChannelBlock(1);
+
+    leftBassBlock.copyFrom(leftInputBlock);
+    rightBassBlock.copyFrom(rightInputBlock);
+    leftMidBlock.copyFrom(leftInputBlock);
+    rightMidBlock.copyFrom(rightInputBlock);
+    leftTrebleBlock.copyFrom(leftInputBlock);
+    rightTrebleBlock.copyFrom(rightInputBlock);
+
     juce::dsp::ProcessContextReplacing<float> leftBassContext(leftBassBlock);
     juce::dsp::ProcessContextReplacing<float> rightBassContext(rightBassBlock);
 
-    midBuffer.makeCopyOf(buffer);
-    juce::dsp::AudioBlock<float> midBlock(midBuffer);
-    auto leftMidBlock = midBlock.getSingleChannelBlock(0);
-    auto rightMidBlock = midBlock.getSingleChannelBlock(1);
     juce::dsp::ProcessContextReplacing<float> leftMidContext(leftMidBlock);
     juce::dsp::ProcessContextReplacing<float> rightMidContext(rightMidBlock);
 
-    trebleBuffer.makeCopyOf(buffer);
-    juce::dsp::AudioBlock<float> trebleBlock(trebleBuffer);
-    auto leftTrebleBlock = trebleBlock.getSingleChannelBlock(0);
-    auto rightTrebleBlock = trebleBlock.getSingleChannelBlock(1);
     juce::dsp::ProcessContextReplacing<float> leftTrebleContext(leftTrebleBlock);
     juce::dsp::ProcessContextReplacing<float> rightTrebleContext(rightTrebleBlock);
 

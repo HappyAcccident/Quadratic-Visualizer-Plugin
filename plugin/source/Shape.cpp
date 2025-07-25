@@ -30,7 +30,9 @@ Shape::Shape(float inputStep, float n, float phi, float outputStep, int res, std
         }
     }
 
+    initPts = pts;
     maxRadius = 1;
+    initMaxRadius = maxRadius;
 }
 
 Shape Shape::operator+(const Shape& other) const
@@ -149,23 +151,33 @@ void Shape::rotate(float phi)
 
 void Shape::addAnimation(Animation* animation, const State& currentState) 
 {
-    animation->addToShape(this->getPts(), this->getMaxRadius(), currentState);
     animations.push_back(animation);
 }
 
 //inserts animation at the orderth index in the animations vector
 void Shape::addAnimation(Animation* animation, const State& currentState, const int& order)
 {
-    animation->addToShape(this->getPts(), this->getMaxRadius(), currentState);
     animations.insert(animations.begin() + order, animation);
 }
 
 void Shape::updateAnimations(const State& currentState)
 {
-    for (Animation* animation : animations)
+    auto newPts = this->getInitPts();
+    auto newMaxRadius = 0;
+    for (auto& pt : newPts)
     {
-        auto newPts = animation->newPts(currentState);
-        this->setPts(newPts.first);
-        this->setMaxRadius(newPts.second);
+        for (Animation* animation : animations)
+        {
+            animation->makeTransformation(currentState);
+            pt = animation->getTransformation()(pt);
+        }
+
+        float mag = abs(sqrtf(pt.real() * pt.real() + pt.imag() * pt.imag()));
+        if (mag > newMaxRadius)
+        {
+            newMaxRadius = mag;
+        }
     }
+    this->setPts(newPts);
+    this->setMaxRadius(newMaxRadius);
 }

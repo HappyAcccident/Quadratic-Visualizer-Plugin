@@ -10,6 +10,9 @@
 
 class Shape {
 protected:
+    std::vector<std::complex<float>> initPts;
+    float initMaxRadius = 0;
+
     std::vector<std::complex<float>> pts; //complex numbers
     std::vector<bool> isVertex;
     float maxRadius = 0; //gives maximum magnitude of points, used to scale display
@@ -38,6 +41,8 @@ public:
     Shape() {}
 
     std::vector<std::complex<float>> getPts() const {return pts;}
+    std::vector<std::complex<float>> getInitPts() const {return initPts;}
+    float getInitMaxRadius() const {return initMaxRadius;}
 
     float getMaxRadius() {return maxRadius;}
 
