@@ -23,14 +23,16 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     A = new Shape(3, 4, 0, -1, res, "Regular"); 
     B = new Shape(1, res, 0, -4, res, "Regular"); //circle
     C = new Shape(1, 4, M_PI/4, 1, res, "Regular"); //square
-    // Animation* ARotate = new RotateAnimation(144*4);
-    // Animation* CScale = new ScaleAnimation(144*1, 1, 2);
-    Animation* AVolume = new VolumeAnimation(Band::Bass);
-    Animation* BVolume = new VolumeAnimation(Band::Bass);
-    // C->addAnimation(CScale, 0);
-    // A->addAnimation(ARotate, 0);
+
+    auto ABassVolumeLambda = [](float x) -> float {return x-0.6f;};
+    auto BBassVolumeLabda = [](float x) -> float {return x-0.6f;};
+
+    Animation* AVolume = new VolumeScaleAnimation(Band::Bass, ABassVolumeLambda);
+    Animation* BVolume = new VolumeScaleAnimation(Band::Bass, BBassVolumeLabda);
+    // Animation* CVolumeRotate = new VolumeRotateAnimation(Band::Treble);
     A->addAnimation(AVolume, currentState);
     B->addAnimation(BVolume, currentState);
+    // C->addAnimation(CVolumeRotate, currentState);
 
     quadraticRoot = Shape::quadratic(*A, *B, *C);
     pos = new Shape(quadraticRoot.first);
@@ -38,7 +40,7 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     display.clearShapes();
     display.addShape(pos);
     display.addShape(neg);
-    // display.addShape(A);
+    // display.addShape(C);
     
     startTimerHz(60);
 }
@@ -56,7 +58,7 @@ void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
     // g.drawFittedText (std::to_string(getFrameCounter()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (std::to_string(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (juce::String(testCounter) + ", " + juce::String(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
-    g.drawFittedText (juce::String(1/(currentState.getMeanBandVolume(Band::Bass)+1), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Mid), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Treble), 4), getLocalBounds(), juce::Justification::centred, 1);
+    g.drawFittedText (juce::String(currentState.getMeanBandVolume(Band::Bass), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Mid), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Treble), 4), getLocalBounds(), juce::Justification::centred, 1);
     
     float radius = 2.0f;
 
@@ -96,13 +98,9 @@ void VisualizerPluginAudioProcessorEditor::update()
     currentState.setMeanBandVolume(Band::Mid, (processorRef.getMidBuffer()));
     currentState.setMeanBandVolume(Band::Treble, (processorRef.getTrebleBuffer()));;
 
-    float scalar = 0.0f;
-    if (currentState.getMeanBandVolume(Band::Bass) == 0.0f) {scalar = 0.0f;} else {scalar = 1/(currentState.getMeanBandVolume(Band::Bass)+0.667);}
-
     A->updateAnimations(currentState);
     B->updateAnimations(currentState);
-    // B->updateAnimations(getFrameCounter());
-    // C->updateAnimations(getFrameCounter());
+    C->updateAnimations(currentState);
 
     quadraticRoot = Shape::quadratic(*A, *B, *C);
     *pos = quadraticRoot.first;

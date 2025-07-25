@@ -29,15 +29,27 @@ std::pair<std::vector<std::complex<float>>, float> RotateAnimation::newPts(const
     return std::make_pair(pts, initMaxRadius);
 };
 
-std::pair<std::vector<std::complex<float>>, float> VolumeAnimation::newPts(const State& currentState) const
+std::pair<std::vector<std::complex<float>>, float> VolumeScaleAnimation::newPts(const State& currentState) const
 {
     std::vector<std::complex<float>> pts;
     float maxRadius;
-    float scalar = currentState.getMeanBandVolume(bandType) - 0.6f;
+    float scalar = calculateScalar(currentState.getMeanBandVolume(bandType));
     for (auto pt : initPts)
     {
         pts.push_back(pt * scalar);
     }
     maxRadius = initMaxRadius*scalar;
     return std::make_pair(pts, maxRadius);
+};
+
+std::pair<std::vector<std::complex<float>>, float> VolumeRotateAnimation::newPts(const State& currentState) const
+{
+    std::vector<std::complex<float>> pts;
+    float phi = M_PI*currentState.getMeanBandVolume(bandType)/180.0f;
+    std::complex<float> rotation (cos(phi), sin(phi));
+    for (auto pt : initPts)
+    {
+        pts.push_back(pt * rotation);
+    }
+    return std::make_pair(pts, initMaxRadius);
 };

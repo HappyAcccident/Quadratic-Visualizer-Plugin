@@ -137,6 +137,26 @@ void VisualizerPluginAudioProcessor::prepareToPlay (double sampleRate, int sampl
     rightTrebleHighPass.get<1>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
     rightTrebleHighPass.get<2>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
     rightTrebleHighPass.get<3>().coefficients = juce::dsp::IIR::Coefficients<float>::makeHighPass(getSampleRate(), 2000.0f);
+
+    bassBuffer.setSize(2, samplesPerBlock);
+    midBuffer.setSize(2, samplesPerBlock);
+    trebleBuffer.setSize(2, samplesPerBlock);
+
+
+    juce::dsp::ProcessSpec spec;
+
+    spec.maximumBlockSize = samplesPerBlock;
+
+    spec.numChannels = 1;
+
+    spec.sampleRate = sampleRate;
+
+    leftBassFilterChain.prepare(spec);
+    rightBassFilterChain.prepare(spec);
+    leftMidFilterChain.prepare(spec);
+    rightMidFilterChain.prepare(spec);
+    leftMidFilterChain.prepare(spec);
+    rightMidFilterChain.prepare(spec);
 }
 
 void VisualizerPluginAudioProcessor::releaseResources()

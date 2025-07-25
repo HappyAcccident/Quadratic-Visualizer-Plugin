@@ -54,9 +54,28 @@ class VolumeAnimation : public Animation
 protected:
     Band bandType;
 public:
-    void addToShape(const std::vector<std::complex<float>>& pts, const float& maxRadius, const State& currentState) {initPts = pts; initMaxRadius = maxRadius;}
     VolumeAnimation(Band bandType) : bandType(bandType) {}
+    void addToShape(const std::vector<std::complex<float>>& pts, const float& maxRadius, const State& currentState) {initPts = pts; initMaxRadius = maxRadius;}
+};
 
+class VolumeScaleAnimation : public VolumeAnimation
+{
+public:
+    using ScalarFunc = std::function<float(const float&)>;
+
+    //bandType specifies the meanBandVolume the scalarFunc will act on
+    //scalarFunc defines the scalar each point is multiplied by using the meanBandVolume
+    VolumeScaleAnimation(Band bandType, ScalarFunc scalarFunc) : VolumeAnimation(bandType), calculateScalar(scalarFunc) {}
+
+    std::pair<std::vector<std::complex<float>>, float> newPts(const State& currentState) const override;
+private:
+    ScalarFunc calculateScalar;
+};
+
+class VolumeRotateAnimation : public VolumeAnimation
+{
+public:
+    VolumeRotateAnimation(Band bandType) : VolumeAnimation(bandType) {}
     std::pair<std::vector<std::complex<float>>, float> newPts(const State& currentState) const override;
 };
 
