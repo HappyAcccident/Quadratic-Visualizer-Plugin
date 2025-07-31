@@ -30,3 +30,11 @@ void VolumeRotateAnimation::makeTransformation(const State& currentState)
     std::complex<float> rotation (cos(phi), sin(phi));
     transformation = [rotation](std::complex<float> pt) -> std::complex<float> {return pt * rotation;};
 };
+
+void BetterVolumeRotateAnimation::makeTransformation(const State& currentState)
+{
+    totalVolume += (currentState.getMeanBandVolume(bandType)*currentState.getMeanBandVolume(bandType));
+    float add = M_PI*totalVolume /**256.0f*//180.0f;
+    std::complex<float> rotation (cos(totalVolume), sin(totalVolume));
+    Animation::transformation = [rotation](std::complex<float> pt) -> std::complex<float> {return pt * rotation;};
+}

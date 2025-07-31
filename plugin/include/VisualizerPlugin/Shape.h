@@ -60,8 +60,8 @@ public:
     void rotate(float phi);
     void scale(float scalar);
 
-    void addAnimation(Animation* animation, const State& currentState);
-    void addAnimation(Animation* animation, const State& currentState, const int& order); 
+    void addAnimation(Animation* animation);
+    void addAnimation(Animation* animation, const int& order); 
     void updateAnimations(const State& currentState);
 };
 

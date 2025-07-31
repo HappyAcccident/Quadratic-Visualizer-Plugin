@@ -149,13 +149,13 @@ void Shape::rotate(float phi)
     }
 }
 
-void Shape::addAnimation(Animation* animation, const State& currentState) 
+void Shape::addAnimation(Animation* animation) 
 {
     animations.push_back(animation);
 }
 
 //inserts animation at the orderth index in the animations vector
-void Shape::addAnimation(Animation* animation, const State& currentState, const int& order)
+void Shape::addAnimation(Animation* animation, const int& order)
 {
     animations.insert(animations.begin() + order, animation);
 }

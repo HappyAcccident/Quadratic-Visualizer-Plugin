@@ -26,6 +26,9 @@ class FrameAnimation : public Animation
 {
 protected:
     int initFrame;
+public:
+    FrameAnimation() {}
+    FrameAnimation(int initFrame) : initFrame(initFrame) {}
 };
 
 class ScaleAnimation : public FrameAnimation
@@ -35,7 +38,7 @@ protected:
     float min;
     float max;
 public:
-    ScaleAnimation(float frequency, float min, float max) : frequency(frequency), min(min), max(max) {}
+    ScaleAnimation(int initFrame, float frequency, float min, float max) : FrameAnimation(initFrame), frequency(frequency), min(min), max(max) {}
 
     void makeTransformation(const State& currentState) override;
 };
@@ -45,7 +48,7 @@ class RotateAnimation : public FrameAnimation
 protected:
     float frequency;
 public:
-    RotateAnimation(float frequency) : frequency(frequency) {}
+    RotateAnimation(int initFrame, float frequency) : frequency(frequency), FrameAnimation(initFrame) {}
 
     void makeTransformation(const State& currentState) override;
 };
@@ -76,6 +79,15 @@ class VolumeRotateAnimation : public VolumeAnimation
 {
 public:
     VolumeRotateAnimation(Band bandType) : VolumeAnimation(bandType) {}
+    void makeTransformation(const State& currentState) override;
+};
+
+class BetterVolumeRotateAnimation : public VolumeAnimation
+{
+private:
+    float totalVolume = 0;
+public:
+    BetterVolumeRotateAnimation(Band bandType): VolumeAnimation (bandType) {}
     void makeTransformation(const State& currentState) override;
 };
 

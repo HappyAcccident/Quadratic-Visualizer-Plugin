@@ -4,8 +4,6 @@
 #include "VisualizerPlugin/Shape.h"
 #include "VisualizerPlugin/Display.h"
 
-using VPAP = VisualizerPluginAudioProcessor;
-
 //==============================================================================
 VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (VisualizerPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), processorRef (p)
@@ -29,19 +27,19 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
 
     Animation* AVolume = new VolumeScaleAnimation(Band::Bass, ABassVolumeLambda);
     Animation* BVolume = new VolumeScaleAnimation(Band::Bass, BBassVolumeLabda);
-    Animation* CVolumeRotate = new VolumeRotateAnimation(Band::Treble);
-    A->addAnimation(AVolume, currentState);
-    B->addAnimation(BVolume, currentState);
-    C->addAnimation(CVolumeRotate, currentState);
-    C->addAnimation(AVolume, currentState);
+    Animation* CVolumeRotate = new BetterVolumeRotateAnimation(Band::Treble);
+
+    A->addAnimation(AVolume);
+    B->addAnimation(BVolume);
+    C->addAnimation(CVolumeRotate);
 
     quadraticRoot = Shape::quadratic(*A, *B, *C);
     pos = new Shape(quadraticRoot.first);
     neg = new Shape(quadraticRoot.second);
     display.clearShapes();
-    // display.addShape(pos);
-    // display.addShape(neg);
-    display.addShape(C);
+    display.addShape(pos);
+    display.addShape(neg);
+    // display.addShape(C);
     
     startTimerHz(60);
 }
@@ -54,13 +52,16 @@ VisualizerPluginAudioProcessorEditor::~VisualizerPluginAudioProcessorEditor()
 void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+    g.fillAll (juce::Colours::black);
     g.setColour (getLookAndFeel().findColour (juce::Slider::thumbColourId));
     // g.drawFittedText (std::to_string(getFrameCounter()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (std::to_string(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (juce::String(testCounter) + ", " + juce::String(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
-    g.drawFittedText (juce::String(currentState.getMeanBandVolume(Band::Bass), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Mid), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Treble), 4), getLocalBounds(), juce::Justification::centred, 1);
+    // g.drawFittedText (juce::String(currentState.getMeanBandVolume(Band::Bass), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Mid), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Treble), 4), getLocalBounds(), juce::Justification::centred, 1);
     
+    float a = 0.25;
+    auto ease = [a](float x) -> float {return a * (cbrt((1/a)*x - 1) + 1);};
+
     float radius = 2.0f;
 
     float scale = (display.getMaxRadius() == 0) ? 1.0f : display.getMaxRadius();
@@ -72,7 +73,8 @@ void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
         int res = display.getResolution();
                 
         float radius = 2.0f;
-                
+            
+        g.setColour(juce::Colour::fromHSV(ease(currentState.getMeanBandVolume(Band::Mid)+0.3), 1.0f, 1.0f, 1.0f));
         for (int i = 0; i < shapePts.size(); i++) {
             float x = (350 / scale) * shapePts[i].real();
             float y = (350 / scale) * shapePts[i].imag();
@@ -91,6 +93,8 @@ void VisualizerPluginAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+
+    auto bounds = getLocalBounds();
 }
 
 void VisualizerPluginAudioProcessorEditor::update()

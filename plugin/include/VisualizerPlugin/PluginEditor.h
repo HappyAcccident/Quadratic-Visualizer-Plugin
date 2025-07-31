@@ -23,6 +23,9 @@ public:
 
     void update();
 
+    void drawShape(const Shape& shape, juce::Graphics& g);
+
+
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
