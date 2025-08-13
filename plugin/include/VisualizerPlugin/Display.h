@@ -2,6 +2,7 @@
 #define DISPLAY_H
 
 #include <vector>
+#include <array>
 #include "Shape.h"
 
 class Display {
@@ -21,6 +22,7 @@ public:
   
   int getResolution() {return resolution;}
   std::vector<Shape*> getShapes() {return shapes;}
+  // std::array<Shape*, 3> getShapeBar() {return shapeBar;}
   int getNumShapes() {return shapes.size();}
 
   float getMaxRadius()
@@ -38,6 +40,7 @@ public:
 
   void setResolution(int newResolution) {resolution = newResolution;}
   void addShape(Shape* shape) {shapes.push_back(shape);}
+  // void setShapeBar(std::array<Shape*, 3> shapes) {shapeBar = shapes;}
 
   void clearShapes() {shapes.clear();}
 private:
@@ -46,6 +49,7 @@ private:
   static Display* instance; 
   int resolution;
   std::vector<Shape*> shapes;
+  // std::array<Shape*, 3> shapeBar;
 };
 
 #endif

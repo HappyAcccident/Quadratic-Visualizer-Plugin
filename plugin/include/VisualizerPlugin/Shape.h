@@ -44,7 +44,7 @@ public:
     std::vector<std::complex<float>> getInitPts() const {return initPts;}
     float getInitMaxRadius() const {return initMaxRadius;}
 
-    float getMaxRadius() {return maxRadius;}
+    float getMaxRadius() const {return maxRadius;}
 
     void setPts(const std::vector<std::complex<float>> newPts) {pts = newPts;}
     void setMaxRadius(float newMaxRadius) {maxRadius = newMaxRadius;}

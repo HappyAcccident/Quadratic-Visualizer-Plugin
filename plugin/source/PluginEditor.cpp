@@ -1,3 +1,5 @@
+#include <array>
+
 #include "VisualizerPlugin/PluginProcessor.h"
 #include "VisualizerPlugin/PluginEditor.h"
 #include "VisualizerPlugin/Animation.h"
@@ -21,6 +23,8 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     A = new Shape(3, 4, 0, -1, res, "Regular"); 
     B = new Shape(1, res, 0, -4, res, "Regular"); //circle
     C = new Shape(1, 4, M_PI/4, 1, res, "Regular"); //square
+
+    // display.setShapeBar({A, B, C});
 
     auto ABassVolumeLambda = [](float x) -> float {return x-0.6f;};
     auto BBassVolumeLabda = [](float x) -> float {return x-0.6f;};
@@ -48,6 +52,13 @@ VisualizerPluginAudioProcessorEditor::~VisualizerPluginAudioProcessorEditor()
 {
 }
 
+template <typename T>
+T getShortestSide(const juce::Rectangle<T>& r)
+{
+    return std::min(r.getWidth(), r.getHeight());
+}
+
+
 //==============================================================================
 void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
@@ -58,34 +69,25 @@ void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
     // g.drawFittedText (std::to_string(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (juce::String(testCounter) + ", " + juce::String(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (juce::String(currentState.getMeanBandVolume(Band::Bass), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Mid), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Treble), 4), getLocalBounds(), juce::Justification::centred, 1);
-    
-    float a = 0.25;
-    auto ease = [a](float x) -> float {return a * (cbrt((1/a)*x - 1) + 1);};
 
-    float radius = 2.0f;
+    auto bounds = getLocalBounds();
+    // g.drawFittedText (juce::String(bounds.getWidth()) + " " + juce::String(bounds.getHeight()), getLocalBounds(), juce::Justification::centred, 1);
+    g.drawFittedText (juce::String(bounds.getCentreX()) + " " + juce::String(bounds.getCentreY()), getLocalBounds(), juce::Justification::centred, 1);
 
-    float scale = (display.getMaxRadius() == 0) ? 1.0f : display.getMaxRadius();
+    // auto shapeBar = bounds.removeFromTop(bounds.getHeight() * 0.2);
+    // auto ASpace = shapeBar.removeFromLeft(bounds.getWidth() * 0.333);
+    // auto BSpace = shapeBar.removeFromLeft(bounds.getWidth() * 0.5);
+
+    float scale = (display.getMaxRadius() == 0) ? 0.1f : display.getMaxRadius();
+
+
+    // drawShape(g, A, ASpace, getShortestSide<int>(ASpace) * 0.8, 1);
+    // drawShape(g, B, BSpace, getShortestSide<int>(BSpace) * 0.8, 1);
+    // drawShape(g, C, shapeBar, getShortestSide<int>(shapeBar) * 0.8, 1);
 
     for (auto shape : display.getShapes())
     {
-        juce::Path shapePath;
-        auto shapePts = shape->getPts();
-        int res = display.getResolution();
-                
-        float radius = 2.0f;
-            
-        g.setColour(juce::Colour::fromHSV(ease(currentState.getMeanBandVolume(Band::Mid)+0.3), 1.0f, 1.0f, 1.0f));
-        for (int i = 0; i < shapePts.size(); i++) {
-            float x = (350 / scale) * shapePts[i].real();
-            float y = (350 / scale) * shapePts[i].imag();
-        
-            float xPrint = getWidth() / 2.f + x;
-            float yPrint = getHeight() / 2.f - y;
-
-            shapePath.addTriangle(xPrint - radius, yPrint - radius, xPrint + radius, yPrint - radius, xPrint, yPrint + radius);
-        }
-
-        g.strokePath (shapePath, juce::PathStrokeType (1.0f));
+        drawShape(g, shape, bounds, getShortestSide<int>(bounds) * 0.667, scale);
     }
 }
 
@@ -94,7 +96,39 @@ void VisualizerPluginAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
 
-    auto bounds = getLocalBounds();
+    // auto bounds = getLocalBounds();
+
+    // auto shapeBar = bounds.removeFromTop(bounds.getHeight() * 0.2);
+}
+
+void VisualizerPluginAudioProcessorEditor::drawShape(juce::Graphics& g, const Shape* shape, int x, int y, int radius, int scale)
+{
+    juce::Path shapePath;
+    auto shapePts = shape->getPts();
+    int res = display.getResolution();
+            
+    float thickness = 2.0f;
+    float a = 0.25;
+    auto ease = [a](float x) -> float {return a * (cbrt((1/a)*x - 1) + 1);};
+    
+    float maxRadius = shape->getMaxRadius();
+    g.setColour(juce::Colour::fromHSV(ease(currentState.getMeanBandVolume(Band::Mid)+0.3), 1.0f, 1.0f, 1.0f));
+    for (int i = 0; i < shapePts.size(); i++) {
+        // float x = (radius / maxRadius) * shapePts[i].real();
+        // float y = (radius / maxRadius) * shapePts[i].imag();
+        float real = (radius / scale) * shapePts[i].real();
+        float imag = (radius / scale) * shapePts[i].imag();
+    
+        float xPrint = real + x;
+        float yPrint = y - imag;
+        shapePath.addTriangle(xPrint - thickness, yPrint - thickness, xPrint + thickness, yPrint - thickness, xPrint, yPrint + thickness);
+    }
+    g.strokePath (shapePath, juce::PathStrokeType (1.0f));
+}
+
+void VisualizerPluginAudioProcessorEditor::drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius, int scale)
+{
+    drawShape(g, shape, bounds.getCentreX(), bounds.getCentreY(), radius, scale);
 }
 
 void VisualizerPluginAudioProcessorEditor::update()
