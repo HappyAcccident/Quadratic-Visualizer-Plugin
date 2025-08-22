@@ -16,6 +16,14 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     setSize(600, 400);
     setResizable(true, false);
 
+    addAndMakeVisible(resolutionSlider);
+    resolutionSlider.setRange(0, 2048, 1);
+    resolutionSlider.addListener(this);
+
+    addAndMakeVisible (resolutionLabel);
+    resolutionLabel.setText ("Resolution", juce::dontSendNotification);
+    resolutionLabel.attachToComponent (&resolutionSlider, true);
+
     display.setResolution(512);
     int res = display.getResolution();
     // A = new Shape(3, (13.0/3.0), M_PI/8.0 + 0.2, 3, res, "Regular"); //8 pointed star with steepness 3
@@ -66,7 +74,7 @@ void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
     // g.drawFittedText (std::to_string(getFrameCounter()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (std::to_string(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (juce::String(testCounter) + ", " + juce::String(display.getNumShapes()), getLocalBounds(), juce::Justification::centred, 1);
-    g.drawFittedText (juce::String(currentState.getMeanBandVolume(Band::Bass), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Mid), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Treble), 4), getLocalBounds(), juce::Justification::centred, 1);
+    // g.drawFittedText (juce::String(currentState.getMeanBandVolume(Band::Bass), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Mid), 4) + " / " + juce::String(currentState.getMeanBandVolume(Band::Treble), 4), getLocalBounds(), juce::Justification::centred, 1);
 
     auto bounds = getLocalBounds();
     // g.drawFittedText (juce::String(bounds.getWidth()) + " " + juce::String(bounds.getHeight()), getLocalBounds(), juce::Justification::centred, 1);
@@ -85,6 +93,14 @@ void VisualizerPluginAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
+
+    auto bounds = getLocalBounds();
+    auto sliderBounds = bounds.removeFromLeft(bounds.getWidth() * 0.167);
+
+    resolutionSlider.setBounds(sliderBounds.getCentreX(),
+                               100,
+                               sliderBounds.getWidth(),
+                               50);
 }
 
 void VisualizerPluginAudioProcessorEditor::drawShape(juce::Graphics& g, const Shape* shape, int x, int y, int radius, int scale)

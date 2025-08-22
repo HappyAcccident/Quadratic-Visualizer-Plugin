@@ -10,7 +10,7 @@
 
 //==============================================================================
 class VisualizerPluginAudioProcessorEditor final : public juce::AudioProcessorEditor,
-juce::Timer
+juce::Timer, public juce::Slider::Listener
 {
 public:
     explicit VisualizerPluginAudioProcessorEditor (VisualizerPluginAudioProcessor&);
@@ -23,6 +23,8 @@ public:
 
     void update();
 
+    void sliderValueChanged(juce::Slider* slider) {};
+
     void drawShape(juce::Graphics& g, const Shape* shape, int x, int y, int radius, int scale);
     void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius, int scale);
     void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius);
@@ -33,6 +35,9 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     VisualizerPluginAudioProcessor& processorRef;
+
+    juce::Slider resolutionSlider;
+    juce::Label resolutionLabel;
 
     Display& display = Display::getInstance();
 
