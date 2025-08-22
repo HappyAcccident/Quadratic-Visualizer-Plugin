@@ -25,6 +25,8 @@ public:
 
     void drawShape(juce::Graphics& g, const Shape* shape, int x, int y, int radius, int scale);
     void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius, int scale);
+    void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius);
+    void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds);
 
 
 private:
