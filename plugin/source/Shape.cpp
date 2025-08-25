@@ -16,7 +16,12 @@ float regularPolygonMag(float theta, float n, float phi, int res)
     return mag;
 }
 
-Shape::Shape(float inputStep, float n, float phi, float outputStep, int res, std::string type)
+Shape::Shape(float inputStep, float n, float phi, float outputStep, int res, std::string type) : inputStep(inputStep),
+                                                                                                 n(n),
+                                                                                                 phi(phi),
+                                                                                                 outputStep(outputStep),
+                                                                                                 resolution(res),
+                                                                                                 type(type)
 {
     float theta = 0;
     float thetaStep = 2*M_PI/res;
@@ -25,6 +30,26 @@ Shape::Shape(float inputStep, float n, float phi, float outputStep, int res, std
         for (int i = 0; i < res; i++)
         {
             float mag = regularPolygonMag(theta*inputStep, n, phi, res);
+            pts.push_back(std::complex<float>(mag*cos(theta*outputStep), mag*sin(theta*outputStep)));
+            theta += thetaStep;
+        }
+    }
+
+    initPts = pts;
+    maxRadius = 1;
+    initMaxRadius = maxRadius;
+}
+
+void Shape::regenerate()
+{
+    pts.clear();
+    float theta = 0;
+    float thetaStep = 2*M_PI/resolution;
+    if (type == "Regular")
+    {
+        for (int i = 0; i < resolution; i++)
+        {
+            float mag = regularPolygonMag(theta*inputStep, n, phi, resolution);
             pts.push_back(std::complex<float>(mag*cos(theta*outputStep), mag*sin(theta*outputStep)));
             theta += thetaStep;
         }
@@ -163,7 +188,7 @@ void Shape::addAnimation(Animation* animation, const int& order)
 void Shape::updateAnimations(const State& currentState)
 {
     auto newPts = this->getInitPts();
-    auto newMaxRadius = 0;
+    float newMaxRadius = 0.0f;
     for (auto& pt : newPts)
     {
         for (Animation* animation : animations)
@@ -172,7 +197,7 @@ void Shape::updateAnimations(const State& currentState)
             pt = animation->getTransformation()(pt);
         }
 
-        float mag = abs(sqrtf(pt.real() * pt.real() + pt.imag() * pt.imag()));
+        float mag = sqrtf(pt.real() * pt.real() + pt.imag() * pt.imag());
         if (mag > newMaxRadius)
         {
             newMaxRadius = mag;

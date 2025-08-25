@@ -46,7 +46,8 @@ public:
             sum += abs(buffer.getSample(c, i));
         }
     }
-    meanBandVolumes[static_cast<int>(bandType)] = sum/(256.0f * buffer.getNumChannels());
+    int numChannels = (buffer.getNumChannels() < 1) ? 1 : buffer.getNumChannels();
+    meanBandVolumes[static_cast<int>(bandType)] = sum/(256.0f * numChannels);
   }
     
   void incrementCurrentFrame() {currentFrame++;}

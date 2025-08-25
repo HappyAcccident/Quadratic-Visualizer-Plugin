@@ -4,13 +4,16 @@
 #define M_PI 3.14159265359
 
 #include <cmath>
+#include <array>
 #include "PluginProcessor.h"
 #include "Shape.h"
 #include "Display.h"
 
 //==============================================================================
 class VisualizerPluginAudioProcessorEditor final : public juce::AudioProcessorEditor,
-juce::Timer, public juce::Slider::Listener
+                                                   public juce::Timer, 
+                                                   public juce::Slider::Listener,
+                                                   public juce::ComboBox::Listener
 {
 public:
     explicit VisualizerPluginAudioProcessorEditor (VisualizerPluginAudioProcessor&);
@@ -23,10 +26,13 @@ public:
 
     void update();
 
-    void sliderValueChanged(juce::Slider* slider) {};
+    void sliderValueChanged(juce::Slider* slider) override;
+    void sliderDragEnded(juce::Slider* slider) override;
 
-    void drawShape(juce::Graphics& g, const Shape* shape, int x, int y, int radius, int scale);
-    void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius, int scale);
+    void comboBoxChanged(juce::ComboBox* comboBox) override {};
+
+    void drawShape(juce::Graphics& g, const Shape* shape, int x, int y, int radius, float scale);
+    void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius, float scale);
     void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius);
     void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds);
 
@@ -38,6 +44,24 @@ private:
 
     juce::Slider resolutionSlider;
     juce::Label resolutionLabel;
+
+
+    juce::ComboBox shapeSelectorComboBox;
+    juce::Label shapeSelectorLabel;
+
+    juce::Slider AInputStepSlider;
+    juce::Label AInputStepLabel;
+
+    juce::Slider ANumeratorSlider;
+    juce::Label ANumeratorLabel;
+
+    juce::Slider ADenominatorSlider;
+    juce::Label ADenominatorLabel;
+
+    juce::Slider AOutputStepSlider;
+    juce::Label AOutputStepLabel;
+
+
 
     Display& display = Display::getInstance();
 

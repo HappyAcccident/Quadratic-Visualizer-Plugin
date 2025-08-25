@@ -30,9 +30,9 @@ public:
     float maxRadius = 0;
     for (auto shape : shapes)
     {
-      if (shape->getMaxRadius() > maxRadius)
+      if (abs(shape->getMaxRadius()) > maxRadius)
       {
-        maxRadius = shape->getMaxRadius();
+        maxRadius = abs(shape->getMaxRadius());
       }
     }
     return maxRadius;
@@ -47,7 +47,7 @@ private:
   Display() = default; 
   ~Display() = default; 
   static Display* instance; 
-  int resolution;
+  int resolution = 512;
   std::vector<Shape*> shapes;
   // std::array<Shape*, 3> shapeBar;
 };

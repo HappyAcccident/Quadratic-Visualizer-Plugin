@@ -17,9 +17,16 @@ protected:
     std::vector<bool> isVertex;
     float maxRadius = 0; //gives maximum magnitude of points, used to scale display
     std::vector<Animation*> animations;
+
+    float inputStep;
+    float n;
+    float phi;
+    float outputStep;
+    int resolution;
+    std::string type;
 public:
     // set of points without a known max radius
-    Shape(std::vector<std::complex<float>> pts) : pts(pts)
+    Shape(std::vector<std::complex<float>> pts) : pts(pts), resolution(pts.size())
     {
         float maxMag = 0.0;
         for (auto pt : pts)
@@ -39,6 +46,22 @@ public:
     //if you want to make a spiral, set vertices equal to -1
     Shape(float inputStep, float n, float phi, float outputStep, int res, std::string type);
     Shape() {}
+
+    void regenerate();
+
+    float getInputStep() const { return inputStep; }
+    float getN() const { return n; }
+    float getPhi() const { return phi; }
+    float getOutputStep() const { return outputStep; }
+    int getResolution() const { return resolution; }
+    const std::string& getType() const { return type; }
+
+    void setInputStep(float value) { inputStep = value; }
+    void setN(float value) { n = value; }
+    void setPhi(float value) { phi = value; }
+    void setOutputStep(float value) { outputStep = value; }
+    void setResolution(int value) { resolution = value; }
+    void setType(const std::string& value) { type = value; }
 
     std::vector<std::complex<float>> getPts() const {return pts;}
     std::vector<std::complex<float>> getInitPts() const {return initPts;}
