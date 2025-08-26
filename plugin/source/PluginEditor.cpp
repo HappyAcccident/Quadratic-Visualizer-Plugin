@@ -108,11 +108,11 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     mainShapes[1] = B;
     mainShapes[2] = C;
 
-    auto ABassVolumeLambda = [](float x) -> float {return x-0.6f;};
-    auto BBassVolumeLabda = [](float x) -> float {return x-0.6f;};
+    auto ABassVolumeLambda = [](float x) -> float {return 0.667*x-0.6f;};
+    auto BBassVolumeLambda = [](float x) -> float {return 1.5*x-0.6f;};
 
     Animation* AVolume = new VolumeScaleAnimation(Band::Bass, ABassVolumeLambda);
-    Animation* BVolume = new VolumeScaleAnimation(Band::Bass, BBassVolumeLabda);
+    Animation* BVolume = new VolumeScaleAnimation(Band::Bass, BBassVolumeLambda);
     Animation* CVolumeRotate = new BetterVolumeRotateAnimation(Band::Treble);
 
     A->addAnimation(AVolume);
@@ -127,7 +127,7 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     display.clearShapes();
     display.addShape(pos);
     display.addShape(neg);
-    // display.addShape(B);
+    // display.addShape(C);
 
 
     //return 3
@@ -163,7 +163,7 @@ void VisualizerPluginAudioProcessorEditor::paint (juce::Graphics& g)
     // g.drawFittedText (juce::String(getShortestSide(bounds)), getLocalBounds(), juce::Justification::centred, 1);
     // g.drawFittedText (juce::String(pos->getMaxRadius()) + ", " + juce::String(neg->getMaxRadius()), getLocalBounds(), juce::Justification::centred, 1);
 
-    // g.drawFittedText(juce::String(A->getMaxRadius()), getLocalBounds(), juce::Justification::centred, 1);
+    // g.drawFittedText(juce::String(pos->getMaxRadius()) + " " + juce::String(neg->getMaxRadius()), getLocalBounds(), juce::Justification::centred, 1);
 
 
     float scale = display.getMaxRadius();
@@ -226,7 +226,7 @@ void VisualizerPluginAudioProcessorEditor::drawShape(juce::Graphics& g, const Sh
     auto shapePts = shape->getPts();
     int res = display.getResolution();
             
-    float thickness = 2.0f;
+    float thickness = 1.5 * sqrt(getShortestSide(getLocalBounds()) * 0.0075);
     float a = 0.25;
     auto ease = [a](float x) -> float {return a * (cbrt((1/a)*x - 1) + 1);};
 
@@ -239,9 +239,10 @@ void VisualizerPluginAudioProcessorEditor::drawShape(juce::Graphics& g, const Sh
 
         float xPrint = real + x;
         float yPrint = y - imag;
-        shapePath.addTriangle(xPrint - thickness, yPrint - thickness, xPrint + thickness, yPrint - thickness, xPrint, yPrint + thickness);
+        g.fillRect(xPrint, yPrint, thickness, thickness);
+        // shapePath.addTriangle(xPrint - thickness, yPrint - thickness, xPrint + thickness, yPrint - thickness, xPrint, yPrint + thickness);
     }
-    g.strokePath (shapePath, juce::PathStrokeType (1.0f));
+    // g.strokePath (shapePath, juce::PathStrokeType (1.0f));
 }
 
 void VisualizerPluginAudioProcessorEditor::drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius, float scale)

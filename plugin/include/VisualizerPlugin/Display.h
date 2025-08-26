@@ -30,9 +30,9 @@ public:
     float maxRadius = 0;
     for (auto shape : shapes)
     {
-      if (abs(shape->getMaxRadius()) > maxRadius)
+      if (shape->getMaxRadius() > maxRadius)
       {
-        maxRadius = abs(shape->getMaxRadius());
+        maxRadius = shape->getMaxRadius();
       }
     }
     return maxRadius;
