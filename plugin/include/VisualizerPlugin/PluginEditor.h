@@ -29,7 +29,9 @@ public:
     void sliderValueChanged(juce::Slider* slider) override;
     void sliderDragEnded(juce::Slider* slider) override;
 
-    void comboBoxChanged(juce::ComboBox* comboBox) override {};
+    void comboBoxChanged(juce::ComboBox* comboBox) override;
+
+    void hideAllShapeSliders();
 
     void drawShape(juce::Graphics& g, const Shape* shape, int x, int y, int radius, float scale);
     void drawShape(juce::Graphics& g, const Shape* shape, juce::Rectangle<int> bounds, int radius, float scale);
@@ -45,22 +47,20 @@ private:
     juce::Slider resolutionSlider;
     juce::Label resolutionLabel;
 
-
     juce::ComboBox shapeSelectorComboBox;
     juce::Label shapeSelectorLabel;
 
-    juce::Slider AInputStepSlider;
-    juce::Label AInputStepLabel;
+    std::array<juce::Slider, 3> inputStepSliders;
+    std::array<juce::Label, 3> inputStepLabels;
 
-    juce::Slider ANumeratorSlider;
-    juce::Label ANumeratorLabel;
+    std::array<juce::Slider, 3> numeratorSliders;
+    std::array<juce::Label, 3> numeratorLabels;
 
-    juce::Slider ADenominatorSlider;
-    juce::Label ADenominatorLabel;
+    std::array<juce::Slider, 3> denominatorSliders;
+    std::array<juce::Label, 3> denominatorLabels;
 
-    juce::Slider AOutputStepSlider;
-    juce::Label AOutputStepLabel;
-
+    std::array<juce::Slider, 3> outputStepSliders;
+    std::array<juce::Label, 3> outputStepLabels;
 
 
     Display& display = Display::getInstance();
@@ -70,6 +70,8 @@ private:
     Shape* A;
     Shape* B;
     Shape* C;
+
+    std::array<Shape*, 3> mainShapes;
 
     std::pair<Shape, Shape> quadraticRoot;
     Shape* pos;

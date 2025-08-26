@@ -20,26 +20,10 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     resolutionSlider.setRange(0, 2048, 1);
     resolutionSlider.setValue(512);
     resolutionSlider.addListener(this);
-
-    addAndMakeVisible(AInputStepSlider);
-    AInputStepSlider.setRange(-10, 10, 1);
-    AInputStepSlider.setValue(3);
-    AInputStepSlider.addListener(this);
-
-    addAndMakeVisible(ANumeratorSlider);
-    ANumeratorSlider.setRange(1, 23, 1);
-    ANumeratorSlider.setValue(4);
-    ANumeratorSlider.addListener(this);
-
-    addAndMakeVisible(ADenominatorSlider);
-    ADenominatorSlider.setRange(1, 21, 1);
-    ADenominatorSlider.setValue(1);
-    ADenominatorSlider.addListener(this);
-
-    addAndMakeVisible(AOutputStepSlider);
-    AOutputStepSlider.setRange(-10, 10, 1);
-    AOutputStepSlider.setValue(-1);
-    AOutputStepSlider.addListener(this);
+    
+    addAndMakeVisible(resolutionLabel);
+    resolutionLabel.setText("Resolution", juce::dontSendNotification);
+    resolutionLabel.attachToComponent(&resolutionSlider, true);
 
     addAndMakeVisible(shapeSelectorComboBox);
     shapeSelectorComboBox.addItem("A", 1);
@@ -48,29 +32,69 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     shapeSelectorComboBox.setSelectedId(1, true);
     shapeSelectorComboBox.addListener(this);
 
-    addAndMakeVisible(resolutionLabel);
-    resolutionLabel.setText("Resolution", juce::dontSendNotification);
-    resolutionLabel.attachToComponent(&resolutionSlider, true);
-
     addAndMakeVisible(shapeSelectorLabel);
     shapeSelectorLabel.setText("Shape", juce::dontSendNotification);
     shapeSelectorLabel.attachToComponent(&shapeSelectorComboBox, true);
 
-    addAndMakeVisible(AInputStepLabel);
-    AInputStepLabel.setText("Input Step", juce::dontSendNotification);
-    AInputStepLabel.attachToComponent(&AInputStepSlider, true);
+    for (int i = 0; i < 3; i++)
+    {
+        addChildComponent(inputStepSliders[i]);
+        inputStepSliders[i].setRange(-10, 10, 1);
+        inputStepSliders[i].addListener(this);
 
-    addAndMakeVisible(ANumeratorLabel);
-    ANumeratorLabel.setText("Numerator", juce::dontSendNotification);
-    ANumeratorLabel.attachToComponent(&ANumeratorSlider, true);
+        addChildComponent(inputStepLabels[i]);
+        inputStepLabels[i].setText("Input Step", juce::dontSendNotification);
+        inputStepLabels[i].attachToComponent(&inputStepSliders[i], true);
 
-    addAndMakeVisible(ADenominatorLabel);
-    ADenominatorLabel.setText("Denominator", juce::dontSendNotification);
-    ADenominatorLabel.attachToComponent(&ADenominatorSlider, true);
 
-    addAndMakeVisible(AOutputStepLabel);
-    AOutputStepLabel.setText("Output Step", juce::dontSendNotification);
-    AOutputStepLabel.attachToComponent(&AOutputStepSlider, true);
+        addChildComponent(numeratorSliders[i]);
+        numeratorSliders[i].setRange(1, 512, 1);
+        numeratorSliders[i].setSkewFactor(0.2, false);
+        numeratorSliders[i].addListener(this);
+
+        addChildComponent(numeratorLabels[i]);
+        numeratorLabels[i].setText("Numerator", juce::dontSendNotification);
+        numeratorLabels[i].attachToComponent(&numeratorSliders[i], true);
+
+
+        addChildComponent(denominatorSliders[i]);
+        denominatorSliders[i].setRange(1, 512, 1);
+        denominatorSliders[i].setSkewFactor(0.2, false);
+        denominatorSliders[i].addListener(this);
+
+        addChildComponent(denominatorLabels[i]);
+        denominatorLabels[i].setText("Denominator", juce::dontSendNotification);
+        denominatorLabels[i].attachToComponent(&denominatorSliders[i], true);
+
+
+        addChildComponent(outputStepSliders[i]);
+        outputStepSliders[i].setRange(-10, 10, 1);
+        outputStepSliders[i].addListener(this);
+
+        addChildComponent(outputStepLabels[i]);
+        outputStepLabels[i].setText("Output Step", juce::dontSendNotification);
+        outputStepLabels[i].attachToComponent(&outputStepSliders[i], true);
+    }
+
+    inputStepSliders[0].setValue(3);
+    numeratorSliders[0].setValue(4);
+    denominatorSliders[0].setValue(1);
+    outputStepSliders[0].setValue(-1);
+
+    inputStepSliders[1].setValue(1);
+    numeratorSliders[1].setValue(512);
+    denominatorSliders[1].setValue(1);
+    outputStepSliders[1].setValue(-4);
+
+    inputStepSliders[2].setValue(1);
+    numeratorSliders[2].setValue(4);
+    denominatorSliders[2].setValue(1);
+    outputStepSliders[2].setValue(1);
+
+    inputStepSliders[0].setVisible(true);
+    numeratorSliders[0].setVisible(true);
+    denominatorSliders[0].setVisible(true);
+    outputStepSliders[0].setVisible(true);
 
     int res = display.getResolution();
     // A = new Shape(3, (13.0/3.0), M_PI/8.0 + 0.2, 3, res, "Regular"); //8 pointed star with steepness 3
@@ -79,6 +103,10 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     A = new Shape(3, 4, 0, -1, res, "Regular"); 
     B = new Shape(1, res, 0, -4, res, "Regular"); //circle
     C = new Shape(1, 4, M_PI/4, 1, res, "Regular"); //square
+
+    mainShapes[0] = A;
+    mainShapes[1] = B;
+    mainShapes[2] = C;
 
     auto ABassVolumeLambda = [](float x) -> float {return x-0.6f;};
     auto BBassVolumeLabda = [](float x) -> float {return x-0.6f;};
@@ -99,7 +127,11 @@ VisualizerPluginAudioProcessorEditor::VisualizerPluginAudioProcessorEditor (Visu
     display.clearShapes();
     display.addShape(pos);
     display.addShape(neg);
-    // display.addShape(A);
+    // display.addShape(B);
+
+
+    //return 3
+    // std::cout << mainShapes[0]->getInputStep() << std::endl;
 
     startTimerHz(60);
 }
@@ -164,25 +196,28 @@ void VisualizerPluginAudioProcessorEditor::resized()
                                     sliderBounds.getWidth(),
                                     sliderHeight);
 
-    AInputStepSlider.setBounds(sliderBounds.getCentreX(),
-                               startY + (sliderHeight + sliderSpacing) * 2,
-                               sliderBounds.getWidth(),
-                               sliderHeight);
+    for (int i = 0; i < 3; i++)
+    {
+        inputStepSliders[i].setBounds(sliderBounds.getCentreX(),
+                                   startY + (sliderHeight + sliderSpacing) * 2,
+                                   sliderBounds.getWidth(),
+                                   sliderHeight);
 
-    ANumeratorSlider.setBounds(sliderBounds.getCentreX(),
-                               startY + (sliderHeight + sliderSpacing) * 3,
-                               sliderBounds.getWidth(),
-                               sliderHeight);
+        numeratorSliders[i].setBounds(sliderBounds.getCentreX(),
+                                   startY + (sliderHeight + sliderSpacing) * 3,
+                                   sliderBounds.getWidth(),
+                                   sliderHeight);
 
-    ADenominatorSlider.setBounds(sliderBounds.getCentreX(),
-                                 startY + (sliderHeight + sliderSpacing) * 4,
-                                 sliderBounds.getWidth(),
-                                 sliderHeight);
+        denominatorSliders[i].setBounds(sliderBounds.getCentreX(),
+                                     startY + (sliderHeight + sliderSpacing) * 4,
+                                     sliderBounds.getWidth(),
+                                     sliderHeight);
 
-    AOutputStepSlider.setBounds(sliderBounds.getCentreX(),
-                                startY + (sliderHeight + sliderSpacing) * 5,
-                                sliderBounds.getWidth(),
-                                sliderHeight);
+        outputStepSliders[i].setBounds(sliderBounds.getCentreX(),
+                                    startY + (sliderHeight + sliderSpacing) * 5,
+                                    sliderBounds.getWidth(),
+                                    sliderHeight);
+    }
 }
 
 void VisualizerPluginAudioProcessorEditor::drawShape(juce::Graphics& g, const Shape* shape, int x, int y, int radius, float scale)
@@ -288,32 +323,62 @@ void VisualizerPluginAudioProcessorEditor::sliderDragEnded(juce::Slider* slider)
         B->setResolution(display.getResolution());
         C->setResolution(display.getResolution());
     }
-    else if (slider == &AInputStepSlider)
+
+    int i = shapeSelectorComboBox.getSelectedId() - 1;
+
+    if (slider == &inputStepSliders[i])
     {
-        A->setInputStep(slider->getValue());
+        mainShapes[i]->setInputStep(slider->getValue());
     }
-    else if (slider == &ANumeratorSlider)
+    else if (slider == &numeratorSliders[i])
     {
-        float n = (slider->getValue())/ADenominatorSlider.getValue();
-        if (n != 2)
+        float q = (slider->getValue()/denominatorSliders[i].getValue());
+        if (q != 2)
         {
-            A->setN(n);
+            mainShapes[i]->setN(q);
         }
     }
-    else if (slider == &ADenominatorSlider)
+    else if (slider == &denominatorSliders[i])
     {
-        float n = (ANumeratorSlider.getValue())/slider->getValue();
-        if (n != 2)
+        float q = (numeratorSliders[i].getValue())/slider->getValue();
+        if (q != 2)
         {
-            A->setN(n);
+            mainShapes[i]->setN(q);
         }
     }
-    else if (slider == &AOutputStepSlider)
+    else if (slider == &outputStepSliders[i])
     {
-        A->setOutputStep(slider->getValue());
+        mainShapes[i]->setOutputStep(slider->getValue());
     }
+    
 
     A->regenerate();
     B->regenerate();
     C->regenerate();
+}
+
+void VisualizerPluginAudioProcessorEditor::comboBoxChanged(juce::ComboBox* comboBox)
+{
+    if (comboBox == &shapeSelectorComboBox)
+    {
+        int i = comboBox->getSelectedId() - 1;
+
+        hideAllShapeSliders();
+
+        inputStepSliders[i].setVisible(true);
+        numeratorSliders[i].setVisible(true);
+        denominatorSliders[i].setVisible(true);
+        outputStepSliders[i].setVisible(true);
+    }
+}
+
+void VisualizerPluginAudioProcessorEditor::hideAllShapeSliders()
+{
+    for (int i = 0; i < 3; i++)
+    {
+        inputStepSliders[i].setVisible(false);
+        numeratorSliders[i].setVisible(false);
+        denominatorSliders[i].setVisible(false);
+        outputStepSliders[i].setVisible(false);
+    }
 }
