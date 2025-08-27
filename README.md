@@ -28,3 +28,11 @@ The Input Step slider changes the input step (a, in the shape generation functio
 The numerator and denominator sliders change the value n in the shape generation function where n = numerator/denominator.
 
 The Output Step slider changes the output step (b, in the shape generation function).
+
+# Video
+
+[CLICK HERE FOR COOL AWESOME EXAMPLE VIDEO](https://www.youtube.com/embed/tgbNymZ7vqY)
+
+<iframe width="420" height="315"
+src="https://www.youtube.com/embed/tgbNymZ7vqY">
+</iframe>
