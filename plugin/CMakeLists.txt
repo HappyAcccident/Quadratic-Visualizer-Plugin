@@ -10,7 +10,7 @@ juce_add_plugin(${PROJECT_NAME}
     PLUGIN_MANUFACTURER_CODE NLDO
     PLUGIN_CODE VRPN
     FORMATS VST3
-    PRODUCT_NAME "Visualizer Plugin"
+    PRODUCT_NAME "Quadratic Visualizer"
 )
 
 target_sources(${PROJECT_NAME}
