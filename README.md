@@ -31,4 +31,4 @@ The Output Step slider changes the output step (b, in the shape generation funct
 
 # Video
 
-[CLICK HERE FOR COOL AWESOME EXAMPLE VIDEO](https://www.youtube.com/embed/tgbNymZ7vqY)
+[CLICK HERE FOR COOL AWESOME EXAMPLE VIDEO](https://www.youtube.com/watch?v=nlIY9vCzq-g)
